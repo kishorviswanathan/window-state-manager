@@ -26,7 +26,7 @@ Note: you may have to explicitly enable the extension using the GNOME Shell Exte
 
 Compatibility
 -------------
-This extension has been tested on GNOME 40 and 42.
+This extension has been tested on GNOME 42.
 
 License
 -------
