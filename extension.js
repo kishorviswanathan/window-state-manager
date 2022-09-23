@@ -188,6 +188,7 @@ function enable() {
 }
 
 function disable() {
+    _allWindowsStates = null;
     if (_interval)
         clearInterval(_interval);
 }
