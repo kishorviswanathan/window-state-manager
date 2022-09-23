@@ -184,11 +184,14 @@ function _refreshState() {
 
 function enable() {
     _allWindowsStates = new AllWindowsStates(LOG_LEVEL);
-    _interval = setInterval(_refreshState, 5000);
+    _interval = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 5000, () => {
+        _refreshState();
+        return GLib.SOURCE_CONTINUE;
+    });
 }
 
 function disable() {
     _allWindowsStates = null;
     if (_interval)
-        clearInterval(_interval);
+        GLib.source_remove(_interval);
 }
