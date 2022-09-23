@@ -174,7 +174,7 @@ function init() {
 function _refreshState() {
     const size = JSON.stringify(global.display.get_size());
     if (size != _lastSavedSize) {
-        global.log(`Screen size changed (old: ${_lastSavedSize}, new: ${size}). Restoring saved layout...`)
+        global.log(`${EXTENSION_LOG_NAME} Screen size changed (old: ${_lastSavedSize}, new: ${size}). Restoring saved layout...`)
         _allWindowsStates.restoreWindowPositions("AutoRestore");
     } else {
         _allWindowsStates.saveWindowPositions("AutoSave");
