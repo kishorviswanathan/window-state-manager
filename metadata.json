@@ -1,7 +1,8 @@
 {
 	"shell-version": [
 		"42",
-		"43"
+		"43",
+		"44"
 	],
 	"uuid": "window-state-manager@kishorv06.github.io",
 	"name": "Window State Manager",
