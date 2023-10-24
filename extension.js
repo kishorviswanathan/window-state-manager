@@ -164,6 +164,12 @@ export default class WindowStateManager extends Extension {
    * GNOME Extensions or when the screen locks.
    */
   disable() {
+    /**
+     * Window states are stored in the `displaySize__windowId__state` variable.
+     * This variable gets initialized in the enable() and destroyed in the disable().
+     * However to make this extension useful, the window states should survive device 
+     * lock and unlock events. For this reason, the `session-mode` of `unlock-dialog` is used.
+     */
     _allWindowsStates = null;
     displaySize__windowId__state = null;
     if (_interval)
