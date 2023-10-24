@@ -2,14 +2,6 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import Meta from "gi://Meta"
 import GLib from "gi://GLib"
 
-// At module scope to ride out the extension disable/enable for a system suspend/resume
-// Note that this appears to violate https://gjs.guide/extensions/review-guidelines/review-guidelines.html#destroy-all-objects
-// though the earlier the example shows init() creating an extension object.  The extension object is empty, but it's still an object.
-// This map will contain primitives but never any object references.  Are Gobject references what the guidelines are actually prohibiting?
-// If this extension were written in the style shown in the guidelines, it looks like this would be part of the Extension class,
-// initialized by the constructor().
-const displaySize__windowId__state = new Map();
-
 // The following are only used for logging
 const EXTENSION_LOG_NAME = 'Window State Manager';
 const START_TIME = GLib.DateTime.new_now_local().format_iso8601();
@@ -36,7 +28,7 @@ class WindowState {
     this._title = window.get_title();
     this._log = log;
     if (log >= LOG_INFO)
-      log(`${EXTENSION_LOG_NAME} Save ${this}`);
+      console.log(`${EXTENSION_LOG_NAME} Save ${this}`);
   }
 
   toString() {
@@ -89,22 +81,22 @@ class WindowState {
     if (this._log >= LOG_ERROR) {
       let hasDiffs = false;
       if (window.minimized !== this._minimized) {
-        log(`${EXTENSION_LOG_NAME} Error: Wrong minimized: ${window.minimized()}, title:${this._title}`);
+        console.log(`${EXTENSION_LOG_NAME} Error: Wrong minimized: ${window.minimized()}, title:${this._title}`);
         hasDiffs = true;
       }
       if (window.get_maximized() !== this._maximized) {
-        log(`${EXTENSION_LOG_NAME} Error: Wrong maximized: ${window.get_maximized()}, title:${this._title}`);
+        console.log(`${EXTENSION_LOG_NAME} Error: Wrong maximized: ${window.get_maximized()}, title:${this._title}`);
         hasDiffs = true;
       }
       // This test fails when there is a difference between saved and current maximization, though the window
       // behaviour is correct.  Due to an asynchronous update?
       if (this._log >= LOG_EVERYTHING && !this._equalRect(window)) {
         const r = window.get_frame_rect();
-        log(`${EXTENSION_LOG_NAME} Error: Wrong rectangle: x:${r.x}, y:${r.y}, w:${r.width}, h:${r.height}, title:${this._title}`);
+        console.log(`${EXTENSION_LOG_NAME} Error: Wrong rectangle: x:${r.x}, y:${r.y}, w:${r.width}, h:${r.height}, title:${this._title}`);
         hasDiffs = true;
       }
       if (hasDiffs)
-        log(`${EXTENSION_LOG_NAME} Expecting: ${this}`);
+        console.log(`${EXTENSION_LOG_NAME} Expecting: ${this}`);
     }
   }
 }
@@ -126,7 +118,7 @@ class AllWindowsStates {
       displaySize__windowId__state.set(displaySizeKey, new Map());
     const windowId__state = displaySize__windowId__state.get(displaySizeKey);
     if (this._log >= LOG_DEBUG)
-      log(`${EXTENSION_LOG_NAME} ${why} map size: ${windowId__state.size}  display size: ${size}  start time: ${START_TIME}`);
+      console.log(`${EXTENSION_LOG_NAME} ${why} map size: ${windowId__state.size}  display size: ${size}  start time: ${START_TIME}`);
     return windowId__state;
   }
 
@@ -143,11 +135,12 @@ class AllWindowsStates {
       if (windowId__state.has(window.get_id()))
         windowId__state.get(window.get_id()).restore(window);
       else if (this._log >= LOG_DEBUG)
-        log(`${EXTENSION_LOG_NAME} ${why} did not find: ${window.get_id()} ${window.get_title()}`);
+        console.log(`${EXTENSION_LOG_NAME} ${why} did not find: ${window.get_id()} ${window.get_title()}`);
     }
   }
 }
 
+let displaySize__windowId__state;
 let _allWindowsStates;
 let _interval;
 let _lastSavedSize;
@@ -158,6 +151,7 @@ export default class WindowStateManager extends Extension {
    * done in GNOME Extensions, when you log in or when the screen is unlocked.
    */
   enable() {
+    displaySize__windowId__state = new Map();
     _allWindowsStates = new AllWindowsStates(LOG_LEVEL);
     _interval = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 5000, () => {
       this._refreshState();
@@ -171,6 +165,7 @@ export default class WindowStateManager extends Extension {
    */
   disable() {
     _allWindowsStates = null;
+    displaySize__windowId__state = null;
     if (_interval)
       GLib.source_remove(_interval);
   }
@@ -182,7 +177,7 @@ export default class WindowStateManager extends Extension {
   _refreshState() {
     const size = JSON.stringify(global.display.get_size());
     if (size != _lastSavedSize) {
-      log(`${EXTENSION_LOG_NAME} Screen size changed (old: ${_lastSavedSize}, new: ${size}). Restoring saved layout...`)
+      console.log(`${EXTENSION_LOG_NAME} Screen size changed (old: ${_lastSavedSize}, new: ${size}). Restoring saved layout...`)
       _allWindowsStates.restoreWindowPositions("AutoRestore");
     } else {
       _allWindowsStates.saveWindowPositions("AutoSave");

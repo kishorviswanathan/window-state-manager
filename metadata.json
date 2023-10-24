@@ -2,6 +2,10 @@
 	"shell-version": [
 		"45"
 	],
+	"session-modes": [
+		"user",
+		"unlock-dialog"
+	],
 	"uuid": "window-state-manager@kishorv06.github.io",
 	"name": "Window State Manager",
 	"url": "https://github.com/kishorv06/window-state-manager",
