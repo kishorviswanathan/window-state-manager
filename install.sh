@@ -24,7 +24,9 @@ echo "Installing to ${BASEDIR}/${DIR}..."
 if [ "$1" == "--install-from-local" ]; then
 	# Install from current directory
 	mkdir -p "${BASEDIR}/${DIR}" 2> /dev/null
-	rsync -r --exclude '.git' . "${BASEDIR}/${DIR}"
+	gnome-extensions pack --extra-source=lib --force
+	gnome-extensions install ./window-state-manager@kishorv06.github.io.shell-extension.zip --force
+	rm ./window-state-manager@kishorv06.github.io.shell-extension.zip
 else
 	# Install from git
 	which git 2> /dev/null > /dev/null || ( echo Could not find Git ; exit 1 )
