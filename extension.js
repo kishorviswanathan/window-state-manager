@@ -17,10 +17,19 @@ export default class WindowStateManager extends Extension {
    */
   enable() {
     Logger.init(EXTENSION_LOG_NAME, LOG_LEVEL);
-    Logger.info("Extension enabled.");
+    Logger.info("Enabling...");
 
-    this.windowStates = new WindowStates();
-    this.lastRefreshedSize = 'None';
+    // Load window states from settings
+    this.stateSettings = this.getSetttings('org.gnome.shell.extensions.windowstatemanager.states');
+
+    try {
+      const savedWindowStates = JSON.parse(this.stateSettings.get_string('window-states'));
+      this.windowStates = new WindowStates(savedWindowStates);
+      Logger.info("Restored window states from disk.");
+    } catch {
+      this.windowStates = new WindowStates();
+      this.lastRefreshedSize = 'None';
+    }
 
     // Start timer to refresh window states
     this.refreshInterval = GLib.timeout_add(GLib.PRIORITY_DEFAULT, REFRESH_INTERVAL, () => {
@@ -34,12 +43,17 @@ export default class WindowStateManager extends Extension {
    * GNOME Extensions or when the screen locks.
    */
   disable() {
-    Logger.info("Extension disabled.");
+    Logger.info("Disabling...");
+
+    // Save window states to disk
+    Logger.info("Saving window states to disk...");
+    this.stateSettings?.set_string('window-states', this.windowStates?.getState())
 
     // Disable the timer
     if (this.refreshInterval)
       GLib.source_remove(this.refreshInterval);
 
+    this.stateSettings = null;
     this.lastRefreshedSize = null;
     this.windowStates = null;
   }
