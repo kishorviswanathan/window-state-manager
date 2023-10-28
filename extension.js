@@ -6,7 +6,7 @@ import { WindowStates } from './lib/extension/windowstate.js';
 
 // Logging configuration
 const EXTENSION_LOG_NAME = 'Window State Manager';
-const LOG_LEVEL = Logger.LOG_LEVELS.INFO;
+const LOG_LEVEL = Logger.LOG_LEVELS.DEBUG;
 
 const REFRESH_INTERVAL = 5000;
 
@@ -20,10 +20,12 @@ export default class WindowStateManager extends Extension {
     Logger.info("Enabling...");
 
     // Load window states from settings
-    this.stateSettings = this.getSetttings('org.gnome.shell.extensions.windowstatemanager.states');
+    this.stateSettings = this.getSettings('org.gnome.shell.extensions.windowstatemanager.states');
 
     try {
-      const savedWindowStates = JSON.parse(this.stateSettings.get_string('window-states'));
+      const savedWindowStates = new Map(Object.entries(
+        JSON.parse(this.stateSettings.get_string('window-states'))
+      ));
       this.windowStates = new WindowStates(savedWindowStates);
       Logger.info("Restored window states from disk.");
     } catch {
