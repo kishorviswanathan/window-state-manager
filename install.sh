@@ -1,10 +1,9 @@
-#!/bin/sh
+#!/bin/bash -e
 
-BASEDIR=.local/share/gnome-shell/extensions
-DIR=window-state-manager@kishorv06.github.io
-URL=https://github.com/kishorv06/window-state-manager.git
+BASEDIR="$HOME/.local/share/gnome-shell/extensions"
+DIR="window-state-manager@kishorv06.github.io"
+URL="https://github.com/kishorv06/window-state-manager.git"
 
-which git 2> /dev/null > /dev/null || ( echo Could not find Git ; exit 1 )
 which gnome-shell 2> /dev/null > /dev/null || ( echo Could not find GNOME Shell ; exit 1 )
 
 GSVERSION=$(gnome-shell --version | awk '{ print $3; }')
@@ -19,24 +18,31 @@ case $GSVERSION in
 	;;
 esac
 
-cd $HOME || exit
 mkdir -p ${BASEDIR} 2> /dev/null
+echo "Installing to ${BASEDIR}/${DIR}..."
 
-cd ${BASEDIR} || ( echo Could not change to ${BASEDIR} ; exit 2 )
-
-echo Using ${HOME}/${BASEDIR}/${DIR}
-
-if [ -d ${DIR}/.git ]; then
-	echo Already installed, updating...
-	cd ${DIR} || exit
-	git pull
+if [ "$1" == "--install-from-local" ]; then
+	# Install from current directory
+	mkdir -p "${BASEDIR}/${DIR}" 2> /dev/null
+	cp -r . "${BASEDIR}/${DIR}"
 else
-	if [ -d ${DIR} ]; then
-		echo Found a previous installation.
-		echo If you are sure you want to replace it, please delete this folder and retry.
-		exit 4
+	# Install from git
+	which git 2> /dev/null > /dev/null || ( echo Could not find Git ; exit 1 )
+
+	cd ${BASEDIR} || ( echo Could not change to ${BASEDIR} ; exit 2 )
+
+	if [ -d ${DIR}/.git ]; then
+		echo "Extension already installed. Updating..."
+		cd ${DIR} || exit
+		git pull
 	else
-		git clone ${URL} ${DIR} || exit 3
+		if [ -d ${DIR} ]; then
+			echo Found a previous installation.
+			echo If you are sure you want to replace it, please delete this folder and retry.
+			exit 4
+		else
+			git clone ${URL} ${DIR} || exit 3
+		fi
 	fi
 fi
 
