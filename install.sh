@@ -24,7 +24,7 @@ echo "Installing to ${BASEDIR}/${DIR}..."
 if [ "$1" == "--install-from-local" ]; then
 	# Install from current directory
 	mkdir -p "${BASEDIR}/${DIR}" 2> /dev/null
-	cp -r . "${BASEDIR}/${DIR}"
+	rsync -r --exclude '.git' . "${BASEDIR}/${DIR}"
 else
 	# Install from git
 	which git 2> /dev/null > /dev/null || ( echo Could not find Git ; exit 1 )
