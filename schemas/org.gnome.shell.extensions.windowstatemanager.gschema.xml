@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <!-- Used to store window states across extension lifecycle -->
-  <schema id="org.gnome.shell.extensions.windowstatemanager.states" path="/org/gnome/shell/extensions/windowstatemanager/states">
+  <schema id="org.gnome.shell.extensions.windowstatemanager.states" path="/org/gnome/shell/extensions/windowstatemanager/states/">
     <key name="window-states" type="s">
       <default>'{}'</default>
     </key>
