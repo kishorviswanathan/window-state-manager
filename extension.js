@@ -43,6 +43,12 @@ export default class WindowStateManager extends Extension {
     // Disconnect signals
     this._disconnectSignals();
 
+    // Disconnect the session mode
+    if (this._sessionId) {
+      Main.sessionMode.disconnect(this._sessionId);
+      this._sessionId = null;
+    }
+
     // Disable pending refresh
     if (this._refreshPending) {
       GLib.source_remove(this._refreshPending);
