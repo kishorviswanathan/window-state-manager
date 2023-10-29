@@ -26,6 +26,9 @@ export default class WindowStateManager extends Extension {
 
     // Connect signals
     this._connectSignals();
+
+    // Refresh state initially
+    this._scheduleRefresh("Extension enabled");
   }
 
   /**
