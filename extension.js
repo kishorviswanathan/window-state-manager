@@ -1,3 +1,4 @@
+import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import GLib from "gi://GLib";
 
@@ -7,8 +8,6 @@ import { WindowStates } from './lib/extension/windowstate.js';
 // Logging configuration
 const EXTENSION_LOG_NAME = 'Window State Manager';
 const LOG_LEVEL = Logger.LOG_LEVELS.INFO;
-
-const REFRESH_INTERVAL = 5000;
 
 export default class WindowStateManager extends Extension {
   /**
@@ -22,11 +21,8 @@ export default class WindowStateManager extends Extension {
     this.windowStates = new WindowStates();
     this.lastRefreshedSize = 'None';
 
-    // Start timer to refresh window states
-    this.refreshInterval = GLib.timeout_add(GLib.PRIORITY_DEFAULT, REFRESH_INTERVAL, () => {
-      this._refreshState();
-      return GLib.SOURCE_CONTINUE;
-    });
+    // Connect signals
+    this._connectSignals();
   }
 
   /**
@@ -36,12 +32,79 @@ export default class WindowStateManager extends Extension {
   disable() {
     Logger.info("Extension disabled.");
 
-    // Disable the timer
-    if (this.refreshInterval)
-      GLib.source_remove(this.refreshInterval);
+    // Disconnect signals
+    this._disconnectSignals();
 
     this.lastRefreshedSize = null;
     this.windowStates = null;
+  }
+
+  _connectSignals() {
+    const display = global.display;
+    const shellWm = global.window_manager;
+
+    this._displaySignals = [
+      display.connect("window-created", () => {
+        Logger.debug("Signal: Window created");
+        this._refreshState();
+      }),
+      display.connect("grab-op-end", () => {
+        Logger.debug("Signal: Grab operation ended");
+        this._refreshState();
+      }),
+      display.connect("window-entered-monitor", () => {
+        Logger.debug("Signal: Window entered monitor");
+        this._refreshState();
+      }),
+      display.connect("in-fullscreen-changed", () => {
+        Logger.debug("Signal: In fullscreen changed");
+        this._refreshState();
+      })
+    ];
+
+    this._wmSignals = [
+      shellWm.connect("minimize", () => {
+        Logger.debug("Signal: Minimize");
+        this._refreshState();
+      }),
+      shellWm.connect("unminimize", () => {
+        Logger.debug("Signal: Unminimize");
+        this._refreshState();
+      })
+    ]
+
+    this._lmSignals = [
+      Main.layoutManager.connect("monitors-changed", () => {
+        Logger.debug("Signal: Monitors changed")
+        this._refreshState();
+      })
+    ]
+  }
+
+  _disconnectSignals() {
+    if (this._displaySignals) {
+      for (const displaySignal of this._displaySignals) {
+        global.display.disconnect(displaySignal);
+      }
+      this._displaySignals.length = 0;
+      this._displaySignals = undefined;
+    }
+
+    if (this._wmSignals) {
+      for (const windowManagerSignal of this._wmSignals) {
+        global.window_manager.disconnect(windowManagerSignal);
+      }
+      this._wmSignals.length = 0;
+      this._wmSignals = undefined;
+    }
+
+    if (this._lmSignals) {
+      for (const layoutManagerSignal of this._lmSignals) {
+        Main.layoutManager.disconnect(layoutManagerSignal);
+      }
+      this._lmSignals.length = 0;
+      this._lmSignals = undefined;
+    }
   }
 
   /**
