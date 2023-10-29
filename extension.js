@@ -35,6 +35,12 @@ export default class WindowStateManager extends Extension {
     // Disconnect signals
     this._disconnectSignals();
 
+    // Disable pending refresh
+    if (this._refreshPending) {
+      GLib.source_remove(this._refreshPending);
+      this._refreshPending = null;
+    }
+
     this.lastRefreshedSize = null;
     this.windowStates = null;
   }
@@ -44,44 +50,20 @@ export default class WindowStateManager extends Extension {
     const shellWm = global.window_manager;
 
     this._displaySignals = [
-      display.connect("window-created", () => {
-        Logger.debug("Signal: Window created");
-        this._refreshState();
-      }),
-      display.connect("grab-op-end", () => {
-        Logger.debug("Signal: Grab operation ended");
-        this._refreshState();
-      }),
-      display.connect("window-entered-monitor", () => {
-        Logger.debug("Signal: Window entered monitor");
-        this._refreshState();
-      }),
-      display.connect("in-fullscreen-changed", () => {
-        Logger.debug("Signal: In fullscreen changed");
-        this._refreshState();
-      })
+      display.connect("window-created", () => { this._scheduleRefresh("Signal: Window created"); }),
+      display.connect("grab-op-end", () => { this._scheduleRefresh("Signal: Grab operation ended"); }),
+      display.connect("window-entered-monitor", () => { this._scheduleRefresh("Signal: Window entered monitor"); }),
+      display.connect("in-fullscreen-changed", () => { this._scheduleRefresh("Signal: In fullscreen changed"); })
     ];
 
     this._wmSignals = [
-      shellWm.connect("size-changed", () => {
-        Logger.debug("Signal: Size changed");
-        this._refreshState();
-      }),
-      shellWm.connect("minimize", () => {
-        Logger.debug("Signal: Minimize");
-        this._refreshState();
-      }),
-      shellWm.connect("unminimize", () => {
-        Logger.debug("Signal: Unminimize");
-        this._refreshState();
-      })
+      shellWm.connect("size-changed", () => { this._scheduleRefresh("Signal: Size changed"); }),
+      shellWm.connect("minimize", () => { this._scheduleRefresh("Signal: Minimize"); }),
+      shellWm.connect("unminimize", () => { this._scheduleRefresh("Signal: Unminimize"); })
     ]
 
     this._lmSignals = [
-      Main.layoutManager.connect("monitors-changed", () => {
-        Logger.debug("Signal: Monitors changed")
-        this._refreshState();
-      })
+      Main.layoutManager.connect("monitors-changed", () => { this._scheduleRefresh("Signal: Monitors changed"); })
     ]
   }
 
@@ -109,6 +91,20 @@ export default class WindowStateManager extends Extension {
       this._lmSignals.length = 0;
       this._lmSignals = undefined;
     }
+  }
+
+  // Schedule refresh
+  _scheduleRefresh(reason) {
+    if (this._refreshPending) return
+
+    Logger.debug(`Refresh scheduled. Reason: ${reason}`);
+
+    // Group events triggred together and run refresh once
+    this._refreshPending = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 5000, () => {
+      this._refreshState();
+      this._refreshPending = null;
+      return GLib.SOURCE_REMOVE;
+    });
   }
 
   /**
