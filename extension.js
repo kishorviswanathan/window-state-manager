@@ -93,14 +93,19 @@ export default class WindowStateManager extends Extension {
     }
   }
 
-  // Schedule refresh
+  /**
+   * This function ensures that the _refreshState function won't be called
+   * multiple times. This occurs when the layout is restored and that triggers
+   * one or more of the signals. This function will schedule the refresh after a
+   * few seconds and all events during this period is ignored.
+   */
   _scheduleRefresh(reason) {
     if (this._refreshPending) return
 
     Logger.debug(`Refresh scheduled. Reason: ${reason}`);
 
     // Group events triggred together and run refresh once
-    this._refreshPending = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 5000, () => {
+    this._refreshPending = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
       this._refreshState();
       this._refreshPending = null;
       return GLib.SOURCE_REMOVE;
