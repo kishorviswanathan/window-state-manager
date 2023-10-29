@@ -7,7 +7,6 @@ Window State Manager is a GNOME Shell extension to monitor window states (positi
 
 ### Limitations
  * Restore does not manage which windows are on top.  However, in testing to date the correct windows have always been shown on top.
- * Window state is saved every 5 seconds. So if a window was created or moved just before removing the device from dock, it's state might not get preserved.
  * State is saved in memory and is not preserved across restarts.
 
 Configuration
