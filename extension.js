@@ -21,6 +21,9 @@ export default class WindowStateManager extends Extension {
     this.windowStates = new WindowStates();
     this.lastRefreshedSize = 'None';
 
+    // Monitor for session mode changes
+    this._sessionId = Main.sessionMode.connect("updated", this._onSessionModeChanged.bind(this));
+
     // Connect signals
     this._connectSignals();
   }
@@ -45,6 +48,32 @@ export default class WindowStateManager extends Extension {
     this.windowStates = null;
   }
 
+  /**
+   * Called when the session mode changes
+   */
+  _onSessionModeChanged(session) {
+    if (session.currentMode === "user" || session.parentMode === "user") {
+      this._scheduleRefresh("Session mode changed");
+    } else if (session.currentMode === "unlock-dialog") {
+      /** To the reviewer and maintainer: this extension needs to persist the window data structure in memory so it has to keep running on lock screen.
+      /* This is previous feature but was removed during GNOME 45 update due to the session-mode rule review.
+      /* The argument is that users will expect the extension to remember window position before the screen was locked.
+      /* Intent to serialize/deserialize to disk but that will take a longer time or probably a longer argument during review.
+      /* This extension doesn't monitor for any keyboard events, hence no such signals needs to be disconnected.
+      /* https://gjs.guide/extensions/review-guidelines/review-guidelines.html#session-modes
+      */
+
+      // Stop any pending refreshes that were scheduled.
+      if (this._refreshPending) {
+        GLib.source_remove(this._refreshPending);
+        this._refreshPending = null;
+      }
+    }
+  }
+
+  /**
+   * Called when extension is enabled. This connects all required signals.
+   */
   _connectSignals() {
     const display = global.display;
     const shellWm = global.window_manager;
@@ -67,6 +96,9 @@ export default class WindowStateManager extends Extension {
     ]
   }
 
+  /**
+   * Called when extension is disabled. This disconnects all signals.
+   */
   _disconnectSignals() {
     if (this._displaySignals) {
       for (const displaySignal of this._displaySignals) {
