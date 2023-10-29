@@ -7,7 +7,7 @@ import { WindowStates } from './lib/extension/windowstate.js';
 
 // Logging configuration
 const EXTENSION_LOG_NAME = 'Window State Manager';
-const LOG_LEVEL = Logger.LOG_LEVELS.DEBUG;
+const LOG_LEVEL = Logger.LOG_LEVELS.INFO;
 
 export default class WindowStateManager extends Extension {
   /**
