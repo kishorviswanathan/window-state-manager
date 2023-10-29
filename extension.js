@@ -63,6 +63,10 @@ export default class WindowStateManager extends Extension {
     ];
 
     this._wmSignals = [
+      shellWm.connect("size-changed", () => {
+        Logger.debug("Signal: Size changed");
+        this._refreshState();
+      }),
       shellWm.connect("minimize", () => {
         Logger.debug("Signal: Minimize");
         this._refreshState();
