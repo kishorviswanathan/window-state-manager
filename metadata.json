@@ -1,6 +1,7 @@
 {
 	"shell-version": [
-		"45"
+		"45",
+		"46"
 	],
 	"session-modes": [
 		"user",
