@@ -97,6 +97,7 @@ export default class WindowStateManager extends Extension {
     ];
 
     this._wmSignals = [
+      shellWm.connect("switch-workspace", () => { this._scheduleRefresh("Signal: Workspace changed"); }),
       shellWm.connect("size-changed", () => { this._scheduleRefresh("Signal: Size changed"); }),
       shellWm.connect("minimize", () => { this._scheduleRefresh("Signal: Minimize"); }),
       shellWm.connect("unminimize", () => { this._scheduleRefresh("Signal: Unminimize"); })
