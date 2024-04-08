@@ -143,9 +143,10 @@ export default class WindowStateManager extends Extension {
    * few seconds and all events during this period is ignored.
    */
   _scheduleRefresh(reason) {
-    if (this._refreshPending) return
-
     Logger.debug(`Refresh scheduled. Reason: ${reason}`);
+
+    if (this._refreshPending)
+      GLib.source_remove(this._refreshPending);
 
     // Group events triggred together and run refresh once
     this._refreshPending = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
