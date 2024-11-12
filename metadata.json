@@ -1,7 +1,8 @@
 {
 	"shell-version": [
 		"45",
-		"46"
+		"46",
+		"47"
 	],
 	"session-modes": [
 		"user",
@@ -10,6 +11,6 @@
 	"uuid": "window-state-manager@kishorv06.github.io",
 	"name": "Window State Manager",
 	"url": "https://github.com/kishorv06/window-state-manager",
-	"version": "11",
+	"version": "12",
 	"description": "Automatically remember and restore window state and positions. Useful when using Gnome with wayland in a multi-monitor setup. Some applications won't remember their location when monitors are connected or disconnected. This extension solves that problem by saving window state periodically and restoring it when screen arrangement is changed."
 }
