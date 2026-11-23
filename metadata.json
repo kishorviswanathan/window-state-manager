@@ -1,7 +1,8 @@
 {
 	"shell-version": [
 		"49",
-		"50"
+		"50",
+		"51"
 	],
 	"session-modes": [
 		"user",

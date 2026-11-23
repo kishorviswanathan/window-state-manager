@@ -9,7 +9,7 @@ which gnome-shell 2> /dev/null > /dev/null || ( echo Could not find GNOME Shell 
 GSVERSION=$(gnome-shell --version | awk '{ print $3; }')
 
 case $GSVERSION in
-49|49.*|50|50.*)
+49|49.*|50|50.*|51|51.*)
 	echo "Version ${GSVERSION} is supported."
 	;;
 *)
